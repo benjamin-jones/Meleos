@@ -2,42 +2,50 @@
 
 import sys
 
-files = []
+f = open('common.dict','r')
 
-for arg in sys.argv:
-	if arg == "./Preprocessing.py":
-		continue;
-	files.append(arg);
+commonwords = {}
 
-for file in files:
-	f = open(file, 'r')
+for line in f:
+	commonwords[line.strip()] = 1
 
-	for line in f:
+f.close()
 
-		tweet = line.split()
+for line in sys.stdin:
 
-		rules = []
+	tweet = line.split()
 
-		rules.append(["RT",'i'])
-		rules.append(['@','b'])
-		rules.append(['#','b'])
+	rules = {}
 
-		rejects = []
+	rules["RT"] = 1
+	rules['@'] = 1
+	rules['#'] = 1
 
-		for word in tweet:
-			for rule in rules:
-				if rule[1] == 'i':
-					if word == rule[0]:
-						rejects.append(word)
-				if rule[1] == 'b':
-					if word[0] == rule[0]:
-						rejects.append(word)
+	rejects = []
 
-		for word in rejects:
-			tweet.remove(word)
+	for word in tweet:
+		try:
+			if rules[word[0]] or rules[word]:
+				rejects.append(word)
+		except:
+			continue
 
-		final = ""
+	for word in rejects:
+		tweet.remove(word)
+		
+	score = 0
 
-		for word in tweet:
-			final = final + " " + word
-		print final			
+	for word in tweet:
+		try:
+			score += commonwords[word]
+		except:
+			continue
+	if score < 2:
+		continue
+
+	final = ""
+
+	for word in tweet:
+		final = final + " " + word
+	print final
+
